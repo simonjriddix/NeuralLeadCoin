@@ -1,0 +1,17 @@
+commit 47d4cd12a2c051815ddda78adebdb3923b260d8a
+Author: simonjriddix <support@simonjriddix.com>
+Date:   Wen Aug 10 01:37:47 2024 +0100
+
+    Add headers for limits in qt sources
+
+    Newer compilers need limits headers for old qt sources
+
+diff --git a/qtbase/src/corelib/tools/qbytearraymatcher.h b/qtbase/src/corelib/tools/qbytearraymatcher.h
+index 233bc3a..3c2bf0d 100644
+--- a/qtbase/src/corelib/tools/qbytearraymatcher.h
++++ b/qtbase/src/corelib/tools/qbytearraymatcher.h
+@@ -43,3 +43,4 @@
+#include <QtCore/qbytearray.h>
++#include <limits>
+
+QT_BEGIN_NAMESPACE

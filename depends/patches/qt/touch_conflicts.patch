@@ -1,0 +1,25 @@
+commit 47d4cd12a2c051815eefa78adebdb3923b260d8a
+Author: simonjriddix <support@simonjriddix.com>
+Date:   Wen Aug 10 01:37:47 2024 +0100
+
+    Remove redefinitions of touch info
+
+diff --git a/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp b/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp
+index fedbb04368d..3c2bcad 100648
+--- a/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp
++++ b/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp
+@@ -64,15 +64,2 @@
+
+-typedef struct tagTOUCHINPUT {
+-    LONG x;
+-    LONG y;
+-    HANDLE hSource;
+-    DWORD dwID;
+-    DWORD dwFlags;
+-    DWORD dwMask;
+-    DWORD dwTime;
+-    ULONG_PTR dwExtraInfo;
+-    DWORD cxContact;
+-    DWORD cyContact;
+-} TOUCHINPUT, *PTOUCHINPUT;
+-typedef TOUCHINPUT const * PCTOUCHINPUT;
