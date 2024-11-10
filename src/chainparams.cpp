@@ -187,7 +187,7 @@ public:
         consensus.fPoSNoRetargeting = false;
         
         consensus.nMPoSRewardRecipients = 10;
-        consensus.EnableStackingAtBlock = 501;
+        consensus.EnableStackingAtBlock = COINBASE_MATURITY + 1; // Switch from PoW to PoS and enable Cashback / AntiStall
 
         consensus.rewardExtraAddresses = {
             {"nEp6ET5SYUbRPx8ASzauYVxLhKgyYuBoaH", 5}, // %      Developers
