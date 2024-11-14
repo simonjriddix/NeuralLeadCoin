@@ -206,13 +206,13 @@ public:
         consensus.PoSRewardCoins = 60;
         consensus.PoSMinimumBalanceToStake = 300 * COIN; // Is Little investor
 
-        consensus.littleStakerPercentage = 7; // 7 %
+        consensus.littleStakerPercentage = 5; // 5 %
         consensus.littleStakerMinimumCoins = consensus.PoSMinimumBalanceToStake;
 
         consensus.mediumStakerPercentage = 23; // 23 %
         consensus.mediumStakerMinimumCoins = 1100 * COIN;
 
-        consensus.bigStakerPercentage = 62; // 62 %
+        consensus.bigStakerPercentage = 72; // 72 %
         consensus.bigStakerMinimumCoins = 3100 * COIN;
 
         consensus.minimumStakerPercentage = 0.00; // 0 %, Under Little investor you can't stake, this is mean you are try to hack, put reward for that hacked block to 0
