@@ -35,6 +35,24 @@ uint256 ComputeStakeModifier(const CBlockIndex* pindexPrev, const uint256& kerne
     return Hash(ss);
 }
 
+CAmount GetNormalizedAmount(CAmount absoluteAmount, const Consensus::Params& params)
+{
+    if(absoluteAmount >= params.bigStakerMinimumCoins)
+    {
+        return params.bigStakerMinimumCoins;
+    }
+    else if(absoluteAmount >= params.mediumStakerMinimumCoins)
+    {
+        return params.mediumStakerMinimumCoins;
+    }
+    else if(absoluteAmount >= params.littleStakerPercentage)
+    {
+        return params.littleStakerPercentage;
+    }
+
+    return absoluteAmount;
+}
+
 // BPS kernel protocol
 // coinstake must meet hash target according to the protocol:
 // kernel (input 0) must meet the formula
@@ -54,7 +72,7 @@ uint256 ComputeStakeModifier(const CBlockIndex* pindexPrev, const uint256& kerne
 //   quantities so as to generate blocks faster, degrading the system back into
 //   a proof-of-work situation.
 //
-bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t blockFromTime, CAmount prevoutValue, const COutPoint& prevout, unsigned int nTimeBlock, uint256& hashProofOfStake, uint256& targetProofOfStake, bool fPrintProofOfStake)
+bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t blockFromTime, int currentBlockHeight, CAmount prevoutValue, const COutPoint& prevout, unsigned int nTimeBlock, uint256& hashProofOfStake, uint256& targetProofOfStake, bool fPrintProofOfStake)
 {
     if (nTimeBlock < blockFromTime)  // Transaction timestamp violation
         return error("CheckStakeKernelHash() : nTime violation");
@@ -65,6 +83,12 @@ bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t 
 
     // Weighted target
     int64_t nValueIn = prevoutValue;
+    // With the normalized value, all stakers of the same size have the opportunity to stake.
+    // Instead of using the absolute balance, the balance value is adjusted to the staker's class (small, medium, and big).
+    // This way, stakers all have the chance to mine, albeit with different priorities.
+    if(currentBlockHeight >= 1994) // Active from block 1994
+        nValueIn = GetNormalizedAmount(nValueIn, Params().GetConsensus());
+    
     arith_uint256 bnWeight = arith_uint256(nValueIn);
     bnTarget *= bnWeight;
 
@@ -123,7 +147,7 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, BlockValidationState& state, con
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-stake-signature-verify", 
                             strprintf("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString()));
 
-    if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinPrev.out.nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, true))
+    if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, pindexPrev->nHeight+1, coinPrev.out.nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, true))
         // may occur during initial download or if behind on block chain sync
         return state.Invalid(BlockValidationResult::BLOCK_HEADER_SYNC, "bad-stake-kernel-check", 
                             strprintf("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s", tx.GetHash().ToString(), hashProofOfStake.ToString()));
@@ -248,14 +272,14 @@ bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t nTimeBloc
             return error("CheckKernel(): Coin is spent");
         }
 
-        return CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinPrev.out.nValue, prevout,
+        return CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, pindexPrev->nHeight + 1, coinPrev.out.nValue, prevout,
                                     nTimeBlock, hashProofOfStake, targetProofOfStake);
     }
     else
     {
         //found in cache
         const CStakeCache& stake = it->second;
-        if(CheckStakeKernelHash(pindexPrev, nBits, stake.blockFromTime, stake.amount, prevout,
+        if(CheckStakeKernelHash(pindexPrev, nBits, stake.blockFromTime, pindexPrev->nHeight+1, stake.amount, prevout,
                                     nTimeBlock, hashProofOfStake, targetProofOfStake))
         {
             //Cache could potentially cause false positive stakes in the event of deep reorgs, so check without cache also
