@@ -190,29 +190,40 @@ public:
         consensus.EnableStackingAtBlock = COINBASE_MATURITY + 1; // Switch from PoW to PoS and enable Cashback / AntiStall
 
         consensus.rewardExtraAddresses = {
+			/// This to NeuralLead Developers Team
             {"nEp6ET5SYUbRPx8ASzauYVxLhKgyYuBoaH", 5}, // %      Developers
-            {"nMqxZ4qcN3Sem6AEMkbqXpNHCMJVX1PRcn", 8}, // %      R&D
-            {"nMYhdmvgBG9pjXxzdL3GTpwt4JAc1EZerX", 6}, // %      DataMining
+            			
+			/// This go to external sources
+			{"nMqxZ4qcN3Sem6AEMkbqXpNHCMJVX1PRcn", 8}, // %      R&D
             {"nRzFNpNPK61uZYmPcUU2PfVDBa28YBiPa7", 2}, // %      Marketing 2.0
             
-            // Not Team
+			/// These wallet go to investors and blockchain
+			{"nMYhdmvgBG9pjXxzdL3GTpwt4JAc1EZerX", 6}, // %      DataMining
             {"nKFtazUd2WAxoKjnq3wSYr7oq1Tbi6zUnK", 4}, // %      AntiStall & CashBack Address
         };
-        consensus.plywoodRewardAddress = "nLc3DXwMsxqsYas2cTWhrfq1d5jgaLr1uL"; // dyn R&D, Dev, Marketing, AirDrop...
-        consensus.AirDropRewardAddress = "n6hazxacLTZm1V9GbWV3Lj7QQ7fqYDrps4"; // AirDrop
+		
+		/// dynamic wallet:
+		/// Goes where need 
+		/// with High priority: R&D and Marketing
+		/// less priority: Dev, AirDrop...
+        consensus.plywoodRewardAddress = "nLc3DXwMsxqsYas2cTWhrfq1d5jgaLr1uL"; // dynamic wallet
         
+		// Go to community
+		consensus.AirDropRewardAddress = "n6hazxacLTZm1V9GbWV3Lj7QQ7fqYDrps4"; // AirDrop
+        
+		/// This wallet go to investors and blockchain
         consensus.AntiStallAddress = "nKFtazUd2WAxoKjnq3wSYr7oq1Tbi6zUnK"; // AntiStall & CashBack Address
 
         consensus.PoSRewardCoins = 60;
         consensus.PoSMinimumBalanceToStake = 300 * COIN; // Is Little investor
 
-        consensus.littleStakerPercentage = 5; // 5 %
+        consensus.littleStakerPercentage = 7; // 5 %
         consensus.littleStakerMinimumCoins = consensus.PoSMinimumBalanceToStake;
 
-        consensus.mediumStakerPercentage = 23; // 23 %
+        consensus.mediumStakerPercentage = 28; // 23 %
         consensus.mediumStakerMinimumCoins = 1100 * COIN;
 
-        consensus.bigStakerPercentage = 72; // 72 %
+        consensus.bigStakerPercentage = 84; // 72 %
         consensus.bigStakerMinimumCoins = 3100 * COIN;
 
         consensus.minimumStakerPercentage = 0.00; // 0 %, Under Little investor you can't stake, this is mean you are try to hack, put reward for that hacked block to 0

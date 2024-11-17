@@ -623,6 +623,9 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* ch
     {
         UninterruptibleSleep(std::chrono::milliseconds{10000}); // wait until wallet is unlocked
     }
+	
+    // Search for AntiStall wallet
+    bool IsAntiStallAddress = pwallet->IsMineDestination(DecodeDestination(Params().GetConsensus().AntiStallAddress));
     
     while (true)
     {
@@ -681,14 +684,10 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* ch
         }
 
         CAmount myBalance = pwallet->GetAvailableBalance();
-
-        // Search for AntiStall wallet
-        bool IsAntiStallAddress = pwallet->IsMineDestination(DecodeDestination(Params().GetConsensus().AntiStallAddress));
-        if(IsAntiStallAddress)
-            LogPrintf("[MINER POS] AntiStall wallet found\n");
         
-        if (
-            (IsAntiStallAddress && myBalance < 0)
+        if ((IsAntiStallAddress && myBalance < 0) // If therearen't stakers on the chain activate antistall/cashback wallet
+												  // Only antistall cashback wallets can mine without a minim amount to avoid
+												  // blockchain stall.
             ||
             (!IsAntiStallAddress && myBalance < Params().GetConsensus().PoSMinimumBalanceToStake))
         {
