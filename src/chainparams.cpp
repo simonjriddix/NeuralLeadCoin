@@ -177,7 +177,7 @@ public:
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.BPSRewardMatchStep = 350400; // PoS Reward Halving avg. 4 yrs
         consensus.BPSRewardMatchHeight = newBlockMins * consensus.BPSRewardMatchStep;
-        consensus.BPSDiffAdjHeight = 10000; // start to Adjust difficulty
+        consensus.BPSDiffAdjHeight = 1994; // start to Adjust difficulty
         consensus.powLimit = uint256S("000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 10 * newBlockMins * 60; // every 10 blocks
