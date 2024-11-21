@@ -167,7 +167,7 @@ struct TeamRewards
         std::map<std::string, int>::const_iterator it_prec = consensus.rewardExtraAddresses.begin();
         while (it_prec != consensus.rewardExtraAddresses.end()) {
 
-            CAmount team_coin = (CAmount) (PoSRewardCoins_Normalized * it_prec->second / 100);
+            CAmount team_coin = (CAmount) ((PoSRewardCoins_Normalized * it_prec->second) / 100);
             rewardExtraAddresses_Normalized.insert( {it_prec->first, team_coin} );
 
             CoinsToTeam += team_coin;

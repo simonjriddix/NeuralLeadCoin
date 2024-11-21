@@ -2288,7 +2288,7 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-addr");
         }
     }
-    else
+    else // if(block.IsProofOfStake())
     {
         int nPrevHeight = nHeight -1;
 
@@ -2315,6 +2315,20 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
         // Check reward recipients number
         if (rewardRecipients < 1)
             return error("CheckReward(): invalid reward recipients");
+        
+        CAmount nReward_full = GetBlockSubsidy_WithoutTeam(nPrevHeight, consensusParams, tmr);
+        
+        if (nReward_full <= 0)
+            return error("CheckReward(): Inavlid Reward");
+            
+        // Take percentage from ply wallet address value
+        size_t plyPosition = block.vtx[1]->vout.size() - 1;
+        CAmount myStakeblePercentage = 100 - ((block.vtx[1]->vout[plyPosition].nValue * 100) / nReward_full);
+        if (myStakeblePercentage != 5 && myStakeblePercentage != consensusParams.littleStakerPercentage && myStakeblePercentage != consensusParams.mediumStakerPercentage && myStakeblePercentage != consensusParams.bigStakerPercentage)
+        {
+            LogPrintf("CheckReward(): staking wrong percentage %d for ply!", myStakeblePercentage);
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-coldstaking-staker-reward-lower-zero");
+        }
 
         if (isColdStake)
         {
@@ -2346,24 +2360,8 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
             }
 
             CAmount nCredit = block.vtx[1]->vout[1].nValue - nFees;
-
-            Consensus::TeamRewards tmr;
-            tmr.ReCalculatePercentageRewardsToTeam(blockReward, consensusParams);
-            CAmount nReward_full = GetBlockSubsidy_WithoutTeam(nPrevHeight, consensusParams, tmr);
-
-            if (nReward_full <= 0)
-                return error("CheckReward(): Inavlid Reward");
             
-            // Take percentage from ply wallet address value
-            size_t plyPosition = block.vtx[1]->vout.size() - 1;
-            int myStakeblePercentage = 100 - ((block.vtx[1]->vout[plyPosition].nValue * 100) / nReward_full);
-            if (myStakeblePercentage <= 0 || myStakeblePercentage > 100)
-            {
-                LogPrintf("CheckReward(): cold staking wrong value under/above little/big investor!");
-                return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-coldstaking-staker-reward-lower-zero");
-            }
-            
-            CAmount nReward = (CAmount) (nReward_full * myStakeblePercentage / 100);
+            CAmount nReward = (CAmount) (nReward_full * myStakeblePercentage) / 100;
             CAmount toColdStaker = (nReward * COLD_STAKER_FEE) / 100;
 
             // If the staker got more than the COLD_STAKER_FEE percentage, reject
@@ -2373,7 +2371,7 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
                 return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-coldstaking-staker-reward");
             }
         }
-        else
+        /*else
         // if rewardRecipients only 1 then is traditional PoS (no MPoS) logic required
         {
             // Cannot check before PoS
@@ -2415,27 +2413,24 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
                     }
                     else
                     {
-                        int myStakeblePercentage = GetPlyRewardPercentage(consensusParams.littleStakerMinimumCoins, consensusParams);
-                        CAmount nReward__full_staker = GetBlockSubsidy_WithoutTeam(nPrevHeight, consensusParams, tmr);
-                        CAmount nReward_staker = (CAmount) (nReward__full_staker * myStakeblePercentage / 100);
-                        if (block.vtx[offset]->vout[i+1].nValue < nReward_staker)
+                        CAmount prevTxValue = block.vtx[offset]->vout[i+1].nValue;
+                        
+                        CAmount nReward_staker = (CAmount) ((nReward_full * consensusParams.littleStakerPercentage) / 100);
+                        if (prevTxValue < nReward_staker)
                         {
-                            LogPrintf("CheckReward(): invalid PoS recipient amount\n");
+                            LogPrintf("CheckReward(): invalid PoS recipient amount prev:%ld  rew:%ld  Full:%ld  Fee:%ld l\n", prevTxValue, nReward_staker, nReward_full, nFees);
                             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-pos");
                         }
                         
-                        myStakeblePercentage = GetPlyRewardPercentage(consensusParams.bigStakerMinimumCoins, consensusParams);
-                        nReward_staker = (CAmount) (nReward__full_staker * myStakeblePercentage / 100);
-                        if (block.vtx[offset]->vout[i+1].nValue > nReward_staker)
+                        nReward_staker = (CAmount) ((nReward_full * consensusParams.bigStakerPercentage) / 100);
+                        if (prevTxValue > nReward_staker)
                         {
-                            LogPrintf("CheckReward(): invalid PoS recipient amount\n");
+                            LogPrintf("CheckReward(): invalid PoS recipient amount prev:%ld  rew:%ld  Full:%ld  Fee:%ld h\n", prevTxValue, nReward_staker, nReward_full, nFees);
                             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-pos");
                         }
                     }
                 }
             }
-
-            return true;
         }
         /*else // MPoS disabled
         {

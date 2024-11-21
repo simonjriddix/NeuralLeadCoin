@@ -1149,7 +1149,7 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
             MarkInputsDirty(wtx.tx);
             WalletLogPrintf("Transaction %s abandoned\n", hashTx.ToString());
         } else {
-            WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, IsAbandoned %s\n", currentconfirm, wtx.isAbandoned() ? "true":"false");
+            WalletLogPrintf("Transaction %s cannot be abandoned; DepthInMainChain %d, IsAbandoned %s\n", currentconfirm, wtx.GetDepthInMainChain(), wtx.isAbandoned() ? "true":"false");
         }
     }
 
@@ -3690,8 +3690,6 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
     
     // Search for AntiStall wallet
     bool IsAntiStallAddress = IsMineDestination(DecodeDestination(Params().GetConsensus().AntiStallAddress));
-    if(IsAntiStallAddress)
-        LogPrintf("[WALLET PoS] AntiStall wallet found\n");
 
     std::vector<const CWalletTx*> vwtxPrev;
 
@@ -3867,7 +3865,7 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
     // get staker reward percentage for Cashback Wallet as little investor
     int myStakeblePercentage = GetPlyRewardPercentage(IsAntiStallAddress ? (consensusParams.littleStakerMinimumCoins) : nBalance, consensusParams);
 
-    CAmount nReward = (CAmount) (nReward_full * myStakeblePercentage / 100);
+    CAmount nReward = (CAmount) ((nReward_full * myStakeblePercentage) / 100);
     
     if (nReward <= 0)
     {
@@ -3876,7 +3874,6 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
     }
     
     CAmount plyAmount = nReward_full - nReward; // to plywoodRewardAddress
-    nReward += nTotalFees; // add fee
 
     if (pindexPrev->nHeight < consensusParams.EnableStackingAtBlock)
         return error("Stake not active");
@@ -3898,6 +3895,7 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
             nCredit += nReward;
         }
     }
+    nCredit += nTotalFees; // add fee
     
     // Check if there are a minimum of coins in credit
     CAmount minCredit = consensusParams.PoSMinimumBalanceToStake + nTotalFees;
@@ -3908,7 +3906,7 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
     }
     else
     {
-        if (nCredit >= (consensusParams.PoSRewardCoins_Normalized*10)) // Threshold is 10x the initial coins reward
+        /*if (nCredit >= (consensusParams.PoSRewardCoins_Normalized*10)) // Threshold is 10x the initial coins reward
         {
             for(unsigned int i = 0; i < GetStakeSplitOutputs() - 1; i++)
                 txNew.vout.push_back(CTxOut(0, txNew.vout[1].scriptPubKey)); //split stake
@@ -3924,7 +3922,7 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
             
             txNew.vout[GetStakeSplitOutputs()].nValue = nCredit - nValue * (GetStakeSplitOutputs() - 1);
         }
-        else
+        else*/
         {
             txNew.vout[1].nValue = nCredit;
         }

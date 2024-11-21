@@ -45,9 +45,9 @@ CAmount GetNormalizedAmount(CAmount absoluteAmount, const Consensus::Params& par
     {
         return params.mediumStakerMinimumCoins;
     }
-    else if(absoluteAmount >= params.littleStakerPercentage)
+    else if(absoluteAmount >= params.littleStakerMinimumCoins)
     {
-        return params.littleStakerPercentage;
+        return params.littleStakerMinimumCoins;
     }
 
     return absoluteAmount;
@@ -80,15 +80,17 @@ bool CheckStakeKernelHash(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t 
     // Base target
     arith_uint256 bnTarget;
     bnTarget.SetCompact(nBits);
-
-    // Weighted target
-    int64_t nValueIn = prevoutValue;
+    
     // With the normalized value, all stakers of the same size have the opportunity to stake.
     // Instead of using the absolute balance, the balance value is adjusted to the staker's class (small, medium, and big).
     // This way, stakers all have the chance to mine, albeit with different priorities.
-    if(currentBlockHeight >= 1994) // Active from block 1994
-        nValueIn = GetNormalizedAmount(nValueIn, Params().GetConsensus());
+    int64_t nValueIn;
+    if(currentBlockHeight >= 2774)
+        nValueIn = GetNormalizedAmount(prevoutValue, Params().GetConsensus());
+    else
+        nValueIn = prevoutValue;
     
+    // Weighted target
     arith_uint256 bnWeight = arith_uint256(nValueIn);
     bnTarget *= bnWeight;
 
