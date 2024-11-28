@@ -5098,6 +5098,11 @@ void CWallet::postInitProcess()
     // Update wallet transactions with current mempool transactions.
     chain().requestMempoolTransactions(*this);
 
+    if (gArgs.GetBoolArg("-stepbystepstaking", DEFAULT_STEPBYSTEP_STAKING))
+    {
+        m_enabled_step_by_step_staking = true;
+    }
+
     // Start mine proof-of-stake blocks in the background
     if (gArgs.GetBoolArg("-staking", DEFAULT_STAKE)) {
         StartStake();

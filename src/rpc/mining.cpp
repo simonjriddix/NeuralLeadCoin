@@ -541,6 +541,83 @@ static UniValue getstakingstatus(const JSONRPCRequest& request)
     return obj;
 }
 
+bool GetWalletNameFromJSONRPCRequest(const JSONRPCRequest& request, std::string& wallet_name);
+
+static RPCHelpMan newstakingstep()
+{
+    return RPCHelpMan{"newstakingstep",
+                "\nThis send a signal to start anothe staking mining cycle if -stepbystepstaking is enabled."
+                "\nWhen found a block go to rest mode and wait another signal to found another block.\n"
+                "\nIs required only one signal to start staking and one signal every time go to rest mode to go out from rest mode and found another block.\n",
+                {
+                    {"wallet_name", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "Send signal to the wallet with label name. If this parameter is null send to all active wallets."}
+                },
+                RPCResult{
+                    RPCResult::Type::NONE, "", "None"
+                },
+                RPCExamples{
+                    HelpExampleCli("wallet_name", "\"testwallet\"") + 
+                    HelpExampleRpc("wallet_name", "\"testwallet\"")
+                },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
+        {
+    #ifdef ENABLE_WALLET
+
+        bool allWallets = false;
+        std::vector<std::shared_ptr<CWallet>> wallets;
+        
+        std::string wallet_name;
+        if (request.params[0].isNull() || GetWalletNameFromJSONRPCRequest(request, wallet_name))
+        {
+            allWallets = true;
+            wallets = GetWallets();
+        } else {
+            wallet_name = request.params[0].get_str();
+
+            if(wallet_name == "" || request.params[0].isNull())
+            {
+                allWallets = true;
+                wallets = GetWallets();
+            }
+            else
+            {
+                std::shared_ptr<CWallet> wallet = GetWallet(wallet_name);
+                if (!wallet) {
+                    throw JSONRPCError(RPC_WALLET_ERROR, "No wallet avalaible create or load wallet to use this command");
+                }
+                
+                wallets.push_back(wallet);
+            }
+        }
+
+        for (auto& wallet : wallets)
+        {
+            CWallet* const pwallet = wallet.get();
+
+            LOCK(pwallet->cs_wallet);
+
+            if (!pwallet->m_enabled_staking) {
+                throw JSONRPCError(RPC_WALLET_ERROR, "Error: Staking is not enabled");
+            }
+
+            if (!pwallet->m_enabled_step_by_step_staking) {
+                throw JSONRPCError(RPC_WALLET_ERROR, "Error: Step By Step Staking is not enabled, command ignore it");
+            }
+
+            pwallet->received_newStakingSignal = true;
+        }
+    #else
+
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: no wallet support");
+        
+    #endif
+        
+        return NullUniValue; // Return null json
+
+        },
+    };
+}
+
 // NOTE: Unlike wallet RPC (which use BTC values), mining RPCs follow GBT (BIP 22) in using satoshi amounts
 static RPCHelpMan prioritisetransaction()
 {
@@ -1324,6 +1401,8 @@ static const CRPCCommand commands[] =
 
     { "mining",             "getstakinginfo",         &getstakinginfo,         {} },
     { "mining",             "getstakingstatus",       &getstakingstatus,       {} },
+    
+    { "mining",             "newstakingstep",         &newstakingstep,         {"wallet_name"} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
     { "generating",         "generatetodescriptor",   &generatetodescriptor,   {"num_blocks","descriptor","maxtries"} },

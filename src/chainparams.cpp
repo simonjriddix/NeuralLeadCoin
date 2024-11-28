@@ -279,6 +279,11 @@ public:
         vSeeds.emplace_back("75.119.146.38");
         vSeeds.emplace_back("46.250.250.218");
         vSeeds.emplace_back("195.32.8.201");
+        vSeeds.emplace_back("seed1.neurallead.com");
+        vSeeds.emplace_back("seed2.neurallead.com");
+        vSeeds.emplace_back("seed3.neurallead.com");
+        vSeeds.emplace_back("seed4.neurallead.com");
+        vSeeds.emplace_back("seed5.neurallead.com");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 112); // n
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 48);  // L
@@ -286,7 +291,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};               
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};               
 
-        bech32_hrp = "NLEAD";
+        bech32_hrp = "nlead";
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 

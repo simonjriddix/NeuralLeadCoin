@@ -629,7 +629,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* ch
     
     while (true)
     {
-        while (pwallet->IsLocked() || !pwallet->m_enabled_staking)
+        while (pwallet->IsLocked() || !pwallet->m_enabled_staking || (pwallet->m_enabled_step_by_step_staking && !pwallet->received_newStakingSignal))
         {
             pwallet->m_last_coin_stake_search_interval = 0;
             UninterruptibleSleep(std::chrono::milliseconds{10000});
@@ -781,6 +781,7 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* ch
                             CheckStake(pblockfilled, *pwallet, chainman);
                             // Update the search time when new valid block is created, needed for status bar icon
                             pwallet->m_last_coin_stake_search_time = pblockfilled->GetBlockTime();
+                            pwallet->received_newStakingSignal = false;
                         }
                         break;
                     }

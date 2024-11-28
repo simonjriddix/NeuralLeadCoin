@@ -103,7 +103,7 @@ if [[ "$OS" == "mingw32" ]]; then
   make clean && make -j$CORES EXTRA_LDFLAGS="-lbcrypt $LIBRARY_IN_COMPILATION"
   mv ./src/*.exe ./bin/$ARCH/$OS/
   mv ./src/qt/*.exe ./bin/$ARCH/$OS/
-  cp ./depends/NeuralLeadQHash/bin/$OS/$ARCH/.dll ./bin/$ARCH/$OS/
+  cp ./depends/NeuralLeadQHash/bin/$OS/$ARCH/*.dll ./bin/$ARCH/$OS/
 elif [[ "$OS" == "Linux" ]]; then
   CFLAGS="-DQPP_FP_DOUBLE -DQPP_IDX_DEFAULT -DQPP_BIGINT_INT -DEIGEN_NO_DEBUG -I/usr/include/eigen3" CPPFLAGS="-DQPP_FP_DOUBLE -DQPP_IDX_DEFAULT -DQPP_BIGINT_INT -DEIGEN_NO_DEBUG -I/usr/include/eigen3" CXXFLAGS="-DQPP_FP_DOUBLE -DQPP_IDX_DEFAULT -DQPP_BIGINT_INT -DEIGEN_NO_DEBUG -I/usr/include/eigen3" CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure --prefix=/ --enable-c++17 --enable-shared=no --enable-static=yes
   make clean && make -j$CORES EXTRA_LDFLAGS="$LIBRARY_IN_COMPILATION"

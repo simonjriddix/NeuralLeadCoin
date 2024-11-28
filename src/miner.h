@@ -32,6 +32,9 @@ static const bool DEFAULT_STAKE = true;
 //! Default for -coldstaking
 static const bool DEFAULT_COLDSTAKING = true;
 
+//! Default for -stepbystepstaking
+static const bool DEFAULT_STEPBYSTEP_STAKING = false;
+
 static const bool DEFAULT_STAKE_CACHE = true;
 
 //How many seconds to look ahead and prepare a block for staking

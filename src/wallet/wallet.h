@@ -1055,6 +1055,8 @@ public:
     int64_t m_last_coin_stake_search_time{0};
     int64_t m_last_coin_stake_search_interval{0};
     std::atomic<bool> m_enabled_staking{false};
+    std::atomic<bool> m_enabled_step_by_step_staking{false};
+    std::atomic<bool> received_newStakingSignal{false};
 
     size_t KeypoolCountExternalKeys() const EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
     bool TopUpKeyPool(unsigned int kpSize = 0);
